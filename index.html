@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shreyam Patel — NASM Certified Personal Trainer</title>
+<meta name="description" content="NASM Certified Personal Trainer offering in-person and online coaching, built around real movement assessments.">
+
+<!--
+  ============================================================
+  CUSTOMIZE ME — search for these placeholders and swap them:
+  [Your City]         → the city/area you train in
+  [your phone]        → your phone number
+  [@yourhandle]       → your Instagram/social handle
+  Pricing numbers      → your actual rates (search "PRICE")
+
+  Name: Shreyam Patel
+  Email: shreyam.training@gmail.com
+
+  Form submission uses a mailto: fallback (no backend needed).
+  For a "real" inbox + spam protection, swap the form's submit
+  handler for a service like Formspree or Netlify Forms —
+  see the comment near the JS at the bottom.
+  ============================================================
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --paper: #EEF0EE;
+    --paper-alt: #E4E7E2;
+    --ink: #14191A;
+    --ink-soft: #4B5452;
+    --navy: #16324F;
+    --navy-soft: #274A6D;
+    --teal: #2F6F62;
+    --teal-soft: #E4EDE9;
+    --brass: #B08D57;
+    --brass-soft: #F1E9DA;
+    --line: #D3D6CC;
+    --white: #FBFBF9;
+
+    --font-display: "Big Shoulders Display", sans-serif;
+    --font-body: "Inter", sans-serif;
+    --font-mono: "IBM Plex Mono", monospace;
+
+    --radius: 3px;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{ color:inherit; }
+  img,svg{ display:block; max-width:100%; }
+
+  :focus-visible{
+    outline:3px solid var(--brass);
+    outline-offset:2px;
+  }
+
+  .wrap{
+    max-width:1120px;
+    margin:0 auto;
+    padding:0 28px;
+  }
+
+  h1,h2,h3{
+    font-family:var(--font-display);
+    font-weight:700;
+    line-height:0.95;
+    letter-spacing:0.2px;
+    text-transform:uppercase;
+    color:var(--ink);
+  }
+
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--teal);
+    font-weight:600;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:7px; height:7px;
+    background:var(--brass);
+    display:inline-block;
+    border-radius:1px;
+  }
+
+  .btn{
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:15px;
+    padding:13px 26px;
+    border-radius:var(--radius);
+    border:1.5px solid var(--navy);
+    display:inline-block;
+    cursor:pointer;
+    text-decoration:none;
+    transition:transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+  }
+  .btn-primary{
+    background:var(--navy);
+    color:var(--white);
+  }
+  .btn-primary:hover{ background:var(--navy-soft); transform:translateY(-1px); }
+  .btn-ghost{
+    background:transparent;
+    color:var(--navy);
+  }
+  .btn-ghost:hover{ background:var(--navy); color:var(--white); }
+  .btn-small{ padding:10px 18px; font-size:13.5px; }
+
+  /* ---------- NAV ---------- */
+  header.site-nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(238,240,238,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 28px;
+    max-width:1120px; margin:0 auto;
+  }
+  .logo{
+    display:flex; align-items:center; gap:10px;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:22px;
+    text-transform:uppercase;
+    text-decoration:none;
+    color:var(--ink);
+  }
+  .logo-mark{
+    width:26px; height:26px;
+    background:var(--navy);
+    border-radius:2px;
+    position:relative;
+    flex-shrink:0;
+  }
+  .logo-mark::before, .logo-mark::after{
+    content:"";
+    position:absolute;
+    background:var(--brass);
+  }
+  .logo-mark::before{ width:14px; height:3px; top:6px; left:6px; }
+  .logo-mark::after{ width:14px; height:3px; bottom:6px; left:6px; }
+
+  nav.links{ display:flex; gap:30px; align-items:center; }
+  nav.links a{
+    text-decoration:none;
+    font-size:14.5px;
+    font-weight:500;
+    color:var(--ink-soft);
+    transition:color 0.15s ease;
+  }
+  nav.links a:hover{ color:var(--navy); }
+  .nav-cta{ display:flex; align-items:center; gap:22px; }
+  .nav-toggle{ display:none; background:none; border:none; cursor:pointer; }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding:76px 0 88px;
+    border-bottom:1px solid var(--line);
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.15fr 0.85fr;
+    gap:56px;
+    align-items:center;
+  }
+  .hero h1{
+    font-size:clamp(42px, 6vw, 68px);
+    margin:18px 0 22px;
+  }
+  .hero-sub{
+    font-size:17px;
+    color:var(--ink-soft);
+    max-width:46ch;
+    margin-bottom:32px;
+  }
+  .hero-ctas{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:28px;}
+  .credential-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:0.05em;
+    background:var(--white);
+    border:1px solid var(--line);
+    padding:8px 14px;
+    border-radius:99px;
+  }
+  .credential-chip::before{
+    content:"✓";
+    color:var(--teal);
+    font-weight:700;
+  }
+
+  /* signature arc graphic */
+  .arc-card{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:32px 28px;
+  }
+  .arc-card h3{
+    font-size:14px;
+    font-family:var(--font-mono);
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    color:var(--ink-soft);
+    font-weight:600;
+    margin-bottom:26px;
+  }
+  .arc-svg{ width:100%; height:auto; }
+  .arc-caption{
+    margin-top:18px;
+    font-size:13.5px;
+    color:var(--ink-soft);
+    line-height:1.55;
+  }
+
+  /* ---------- ABOUT ---------- */
+  .about{ padding:80px 0; border-bottom:1px solid var(--line); }
+  .about-grid{
+    display:grid;
+    grid-template-columns:0.9fr 1.1fr;
+    gap:60px;
+  }
+  .about h2{ font-size:36px; margin-bottom:20px; }
+  .about p{ color:var(--ink-soft); margin-bottom:16px; max-width:52ch; }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:24px; }
+
+  /* ---------- MODES ---------- */
+  .modes{ padding:80px 0; border-bottom:1px solid var(--line); background:var(--paper-alt); }
+  .section-head{ margin-bottom:44px; max-width:60ch; }
+  .section-head h2{ font-size:36px; margin-bottom:12px; }
+  .section-head p{ color:var(--ink-soft); }
+
+  .mode-grid{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .mode-card{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:32px;
+  }
+  .mode-card .eyebrow{ margin-bottom:14px; }
+  .mode-card h3{ font-size:26px; margin-bottom:12px; }
+  .mode-card ul{ list-style:none; margin-top:18px; }
+  .mode-card li{
+    padding:9px 0;
+    border-top:1px solid var(--line);
+    font-size:14.5px;
+    color:var(--ink-soft);
+    display:flex;
+    gap:10px;
+  }
+  .mode-card li::before{ content:"—"; color:var(--brass); flex-shrink:0; }
+
+  /* ---------- PRICING ---------- */
+  .pricing{ padding:80px 0; border-bottom:1px solid var(--line); }
+  .price-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  .price-card{
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--white);
+    padding:30px 26px;
+    display:flex;
+    flex-direction:column;
+  }
+  .price-card.featured{
+    border-color:var(--navy);
+    box-shadow:0 0 0 1px var(--navy);
+    position:relative;
+  }
+  .featured-tag{
+    position:absolute; top:-13px; left:26px;
+    background:var(--navy); color:var(--white);
+    font-family:var(--font-mono);
+    font-size:11px; letter-spacing:0.08em;
+    padding:4px 10px; border-radius:99px;
+    text-transform:uppercase;
+  }
+  .price-card h3{
+    font-size:15px; font-family:var(--font-mono);
+    letter-spacing:0.05em; text-transform:uppercase;
+    color:var(--ink-soft); font-weight:600; margin-bottom:10px;
+  }
+  .price-amount{
+    font-family:var(--font-mono);
+    font-size:36px;
+    font-weight:600;
+    color:var(--ink);
+    margin-bottom:4px;
+  }
+  .price-amount span{ font-size:14px; color:var(--ink-soft); font-weight:500; }
+  .price-desc{ font-size:13.5px; color:var(--ink-soft); margin-bottom:22px; }
+  .price-card ul{ list-style:none; margin-bottom:26px; flex-grow:1; }
+  .price-card li{
+    font-size:14px; padding:8px 0; color:var(--ink-soft);
+    border-top:1px solid var(--line);
+    display:flex; gap:8px;
+  }
+  .price-card li::before{ content:"✓"; color:var(--teal); font-weight:700; flex-shrink:0; }
+  .price-card .btn{ text-align:center; }
+
+  /* ---------- TIPS ---------- */
+  .tips{ padding:80px 0; border-bottom:1px solid var(--line); background:var(--paper-alt); }
+  .tips-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:22px; }
+  .tip-card{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:26px;
+  }
+  .tip-tag{
+    display:inline-block;
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--brass);
+    background:var(--brass-soft);
+    padding:4px 10px;
+    border-radius:99px;
+    margin-bottom:14px;
+  }
+  .tip-card h3{
+    font-size:20px;
+    text-transform:none;
+    letter-spacing:0;
+    font-weight:700;
+    margin-bottom:10px;
+    font-family:var(--font-body);
+  }
+  .tip-card p{ font-size:14px; color:var(--ink-soft); }
+
+  /* ---------- REGISTER ---------- */
+  .register{ padding:84px 0; }
+  .register-grid{ display:grid; grid-template-columns:0.85fr 1.15fr; gap:56px; }
+  .register h2{ font-size:36px; margin-bottom:14px; }
+  .register p.lead{ color:var(--ink-soft); margin-bottom:28px; max-width:42ch; }
+  .contact-line{ font-family:var(--font-mono); font-size:13.5px; margin-bottom:10px; color:var(--ink-soft); }
+  .contact-line strong{ color:var(--ink); }
+
+  form{
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:32px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+  }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field.full{ grid-column:1 / -1; }
+  label{
+    font-size:12.5px;
+    font-family:var(--font-mono);
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+  input, select, textarea{
+    font-family:var(--font-body);
+    font-size:15px;
+    padding:11px 12px;
+    border:1.5px solid var(--line);
+    border-radius:var(--radius);
+    background:var(--paper);
+    color:var(--ink);
+  }
+  input:focus, select:focus, textarea:focus{
+    border-color:var(--navy);
+    outline:none;
+  }
+  textarea{ resize:vertical; min-height:90px; }
+  .form-msg{
+    grid-column:1/-1;
+    font-size:13.5px;
+    padding:12px 14px;
+    border-radius:var(--radius);
+    display:none;
+  }
+  .form-msg.show{ display:block; }
+  .form-msg.success{ background:var(--teal-soft); color:var(--teal); }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    border-top:1px solid var(--line);
+    padding:36px 0;
+    background:var(--paper-alt);
+  }
+  .footer-inner{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:16px;
+  }
+  .footer-inner p{ font-size:13px; color:var(--ink-soft); }
+  .footer-links{ display:flex; gap:20px; }
+  .footer-links a{ font-size:13px; text-decoration:none; color:var(--ink-soft); }
+  .footer-links a:hover{ color:var(--navy); }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width:860px){
+    .hero-grid, .about-grid, .mode-grid, .price-grid, .tips-grid, .register-grid{
+      grid-template-columns:1fr;
+    }
+    nav.links{
+      position:absolute; top:100%; left:0; right:0;
+      background:var(--paper); border-bottom:1px solid var(--line);
+      flex-direction:column; padding:20px 28px; gap:16px;
+      display:none;
+    }
+    nav.links.open{ display:flex; }
+    .nav-toggle{ display:block; }
+    form{ grid-template-columns:1fr; }
+    .hero{ padding:52px 0 64px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *{ transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-nav">
+  <div class="nav-inner">
+    <a href="#top" class="logo"><span class="logo-mark"></span>Shreyam Patel</a>
+    <nav class="links" id="navLinks">
+      <a href="#about">About</a>
+      <a href="#modes">Training</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#tips">Notes</a>
+      <a href="#register">Contact</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="#register" class="btn btn-primary btn-small">Book a session</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">NASM-CPT · In-person &amp; online</span>
+        <h1>Training built<br>around how you<br>actually move.</h1>
+        <p class="hero-sub">
+          I'm Shreyam Patel, a NASM Certified Personal Trainer in [Your City].
+          Every program starts with a real movement assessment — not a generic plan —
+          so the work you put in actually goes somewhere.
+        </p>
+        <div class="hero-ctas">
+          <a href="#register" class="btn btn-primary">Start with an assessment</a>
+          <a href="#pricing" class="btn btn-ghost">See pricing</a>
+        </div>
+        <span class="credential-chip">NASM Certified Personal Trainer</span>
+      </div>
+
+      <div class="arc-card">
+        <h3>How we'll work together</h3>
+        <svg class="arc-svg" viewBox="0 0 360 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three step process: Assess, Train, Progress">
+          <line x1="30" y1="70" x2="330" y2="70" stroke="#D3D6CC" stroke-width="2" stroke-dasharray="1 7" stroke-linecap="round"/>
+          <circle cx="40" cy="70" r="7" fill="#16324F"/>
+          <circle cx="180" cy="70" r="7" fill="#2F6F62"/>
+          <circle cx="320" cy="70" r="7" fill="#B08D57"/>
+          <text x="40" y="40" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#14191A" font-weight="600">ASSESS</text>
+          <text x="180" y="40" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#14191A" font-weight="600">TRAIN</text>
+          <text x="320" y="40" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#14191A" font-weight="600">PROGRESS</text>
+          <text x="40" y="98" text-anchor="middle" font-family="Inter, sans-serif" font-size="10.5" fill="#4B5452">Movement + goals</text>
+          <text x="180" y="98" text-anchor="middle" font-family="Inter, sans-serif" font-size="10.5" fill="#4B5452">Programmed sessions</text>
+          <text x="320" y="98" text-anchor="middle" font-family="Inter, sans-serif" font-size="10.5" fill="#4B5452">Re-test &amp; adjust</text>
+        </svg>
+        <p class="arc-caption">Every client goes through this loop on repeat — that's how the plan stays honest to your progress instead of a fixed template.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <div class="wrap about-grid">
+      <div>
+        <span class="eyebrow">About</span>
+        <h2>A coach who tests before prescribing.</h2>
+      </div>
+      <div>
+        <p>
+          I got into training because I was tired of watching people follow programs
+          that had nothing to do with their actual bodies. As a NASM Certified
+          Personal Trainer, I use structured movement assessments to figure out what
+          you need — mobility work, strength work, better recovery — before I write
+          a single set.
+        </p>
+        <p>
+          I work with clients in [Your City] in person, and with clients anywhere
+          online through programmed workouts and weekly check-ins. Same standard,
+          two formats.
+        </p>
+        <div class="chip-row">
+          <span class="credential-chip">NASM-CPT</span>
+          <span class="credential-chip">Assessment-based programming</span>
+          <span class="credential-chip">Injury-aware coaching</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODES -->
+  <section class="modes" id="modes">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Two ways to train</h2>
+        <p>Pick what fits your schedule and location — the coaching standard doesn't change.</p>
+      </div>
+      <div class="mode-grid">
+        <div class="mode-card">
+          <span class="eyebrow">In-person</span>
+          <h3>Face to face, [Your City]</h3>
+          <p style="color:var(--ink-soft); font-size:14.5px;">Hands-on coaching, live form correction, and equipment access — best for clients who want direct feedback every session.</p>
+          <ul>
+            <li>In-person movement assessment</li>
+            <li>Live form correction &amp; spotting</li>
+            <li>Flexible scheduling, [Your City] studio or gym</li>
+            <li>Progress re-tested every 4–6 weeks</li>
+          </ul>
+        </div>
+        <div class="mode-card">
+          <span class="eyebrow">Online</span>
+          <h3>Coached from anywhere</h3>
+          <p style="color:var(--ink-soft); font-size:14.5px;">Programmed training through an app, with video form checks and weekly check-ins — best for self-sufficient clients who still want real feedback.</p>
+          <ul>
+            <li>Remote movement assessment via video</li>
+            <li>App-based programming, updated weekly</li>
+            <li>Async video form review</li>
+            <li>Weekly written check-in</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing" id="pricing">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Packages</h2>
+        <p>Every package starts with a full movement assessment. Prices below are placeholders — update with your actual rates.</p>
+      </div>
+      <div class="price-grid">
+        <div class="price-card">
+          <h3>Online Coaching</h3>
+          <div class="price-amount">$149<span>/mo</span></div>
+          <p class="price-desc">Programmed training + weekly check-ins, fully remote.</p>
+          <ul>
+            <li>Remote movement assessment</li>
+            <li>Custom program, updated weekly</li>
+            <li>Async video form review</li>
+            <li>Weekly written check-in</li>
+          </ul>
+          <button class="btn btn-ghost pick-plan" data-plan="Online Coaching">Register interest</button>
+        </div>
+        <div class="price-card featured">
+          <span class="featured-tag">Most booked</span>
+          <h3>Hybrid Coaching</h3>
+          <div class="price-amount">$299<span>/mo</span></div>
+          <p class="price-desc">2x in-person sessions/month plus online programming in between.</p>
+          <ul>
+            <li>In-person assessment + 2 sessions/mo</li>
+            <li>Custom program for off days</li>
+            <li>Async video form review</li>
+            <li>Weekly written check-in</li>
+          </ul>
+          <button class="btn btn-primary pick-plan" data-plan="Hybrid Coaching">Register interest</button>
+        </div>
+        <div class="price-card">
+          <h3>In-Person, 1-on-1</h3>
+          <div class="price-amount">$85<span>/session</span></div>
+          <p class="price-desc">Fully hands-on sessions, booked as you go or in a bundle.</p>
+          <ul>
+            <li>In-person movement assessment</li>
+            <li>Live coaching every session</li>
+            <li>Session bundles available</li>
+            <li>Progress re-tested every 4–6 weeks</li>
+          </ul>
+          <button class="btn btn-ghost pick-plan" data-plan="In-Person 1-on-1">Register interest</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIPS -->
+  <section class="tips" id="tips">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>Training notes</h2>
+        <p>A few short, practical notes — not filler content.</p>
+      </div>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <span class="tip-tag">Assessment</span>
+          <h3>Why "sore" isn't the goal</h3>
+          <p>Soreness tells you a muscle was worked, not that it was worked well. Progress comes from consistent load over weeks, not how wrecked you feel the next day.</p>
+        </div>
+        <div class="tip-card">
+          <span class="tip-tag">Recovery</span>
+          <h3>Sleep is part of the program</h3>
+          <p>Strength adaptations happen during recovery, not during the set. If sleep is inconsistent, that's a programming variable — tell your coach, don't just push through.</p>
+        </div>
+        <div class="tip-card">
+          <span class="tip-tag">Mobility</span>
+          <h3>Mobility work isn't a warm-up afterthought</h3>
+          <p>Tight hips or shoulders usually explain a stalled lift better than the lift itself does. A short mobility block before training pays off more than it feels like it should.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REGISTER -->
+  <section class="register" id="register">
+    <div class="wrap register-grid">
+      <div>
+        <span class="eyebrow">Get started</span>
+        <h2>Register for a session</h2>
+        <p class="lead">Tell me a bit about your goals and I'll follow up to schedule your first assessment.</p>
+        <div class="contact-line"><strong>Email:</strong> shreyam.training@gmail.com</div>
+        <div class="contact-line"><strong>Phone:</strong> [your phone]</div>
+        <div class="contact-line"><strong>Instagram:</strong> [@yourhandle]</div>
+      </div>
+
+      <form id="registerForm">
+        <div class="field">
+          <label for="name">Full name</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input type="tel" id="phone" name="phone">
+        </div>
+        <div class="field">
+          <label for="mode">Preferred training</label>
+          <select id="mode" name="mode" required>
+            <option value="">Select one</option>
+            <option value="In-person">In-person</option>
+            <option value="Online">Online</option>
+            <option value="Either">Either works</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="plan">Package interested in</label>
+          <select id="plan" name="plan">
+            <option value="">Not sure yet</option>
+            <option value="Online Coaching">Online Coaching — $149/mo</option>
+            <option value="Hybrid Coaching">Hybrid Coaching — $299/mo</option>
+            <option value="In-Person 1-on-1">In-Person 1-on-1 — $85/session</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label for="goal">What's your main goal?</label>
+          <textarea id="goal" name="goal" placeholder="e.g. build strength, train for an event, rehab an old injury..."></textarea>
+        </div>
+        <div class="field full">
+          <button type="submit" class="btn btn-primary" style="width:100%;">Send registration</button>
+        </div>
+        <div class="form-msg success" id="formMsg">Thanks — your email app should have opened with your details filled in. Send it and I'll follow up within a day or two.</div>
+      </form>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <p>&copy; <span id="year"></span> Shreyam Patel Training · NASM Certified Personal Trainer · [Your City]</p>
+    <div class="footer-links">
+      <a href="mailto:shreyam.training@gmail.com">shreyam.training@gmail.com</a>
+      <a href="#top">Back to top</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+
+  // mobile nav toggle
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+  navToggle.addEventListener('click', () => {
+    const open = navLinks.classList.toggle('open');
+    navToggle.setAttribute('aria-expanded', open);
+  });
+  navLinks.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+    navLinks.classList.remove('open');
+  }));
+
+  // pricing buttons -> pre-fill + scroll to form
+  document.querySelectorAll('.pick-plan').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('plan').value = btn.dataset.plan;
+      document.getElementById('register').scrollIntoView({ behavior: 'smooth' });
+      document.getElementById('name').focus();
+    });
+  });
+
+  /*
+    Form submission — currently uses a mailto: fallback so the site
+    works with zero backend. This opens the visitor's email app with
+    a pre-filled message addressed to you.
+
+    For a more reliable, spam-protected inbox (recommended once you
+    deploy this for real), swap the code below for a form service like
+    Formspree (formspree.io) or Netlify Forms — both have a free tier
+    and just need you to point the <form> action at their endpoint
+    instead of using JavaScript here.
+  */
+  document.getElementById('registerForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const data = new FormData(this);
+    const body = [
+      `Name: ${data.get('name')}`,
+      `Email: ${data.get('email')}`,
+      `Phone: ${data.get('phone') || '—'}`,
+      `Preferred training: ${data.get('mode')}`,
+      `Package interested in: ${data.get('plan') || 'Not sure yet'}`,
+      `Goal: ${data.get('goal') || '—'}`
+    ].join('%0D%0A');
+
+    const mailto = `mailto:shreyam.training@gmail.com?subject=${encodeURIComponent('New training registration — ' + data.get('name'))}&body=${body}`;
+    window.location.href = mailto;
+
+    document.getElementById('formMsg').classList.add('show');
+  });
+</script>
+
+</body>
+</html>
