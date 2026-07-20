@@ -28,6 +28,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 
+<!--
+  Supabase — database + auth.
+  The anon/public key below is MEANT to be public (it only allows what
+  our Row Level Security policies permit — see supabase/001_initial_schema.sql).
+  Never put the service_role key here or anywhere in this file.
+-->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
 <style>
   :root{
     --paper: #EEF0EE;
@@ -729,20 +737,30 @@
     });
   });
 
-  /*
-    Form submission — currently uses a mailto: fallback so the site
-    works with zero backend. This opens the visitor's email app with
-    a pre-filled message addressed to you.
+  // ---------- Supabase setup ----------
+  const SUPABASE_URL = 'https://thgglkgzgirppuldxhq.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRoZ2dsa2d6Z2lycHBwdWxkeGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1MDk0MzYsImV4cCI6MjEwMDA4NTQzNn0.T41YBTD0V03QX3gSCWX8stVriYge4TmOWry67uoor_A';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    For a more reliable, spam-protected inbox (recommended once you
-    deploy this for real), swap the code below for a form service like
-    Formspree (formspree.io) or Netlify Forms — both have a free tier
-    and just need you to point the <form> action at their endpoint
-    instead of using JavaScript here.
-  */
-  document.getElementById('registerForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    const data = new FormData(this);
+  // ---------- Registration form ----------
+  // Writes straight into the `registrations` table in Supabase.
+  // Falls back to opening an email if the database write fails for
+  // any reason (offline, Supabase down, etc.) so a submission is
+  // never silently lost.
+  const form = document.getElementById('registerForm');
+  const formMsg = document.getElementById('formMsg');
+  const submitBtn = form.querySelector('button[type="submit"]');
+
+  function showMsg(text, isError){
+    formMsg.textContent = text;
+    formMsg.classList.remove('success');
+    formMsg.style.background = isError ? '#F6E4E0' : '';
+    formMsg.style.color = isError ? '#A13D2D' : '';
+    if (!isError) formMsg.classList.add('success');
+    formMsg.classList.add('show');
+  }
+
+  function mailtoFallback(data){
     const body = [
       `Name: ${data.get('name')}`,
       `Email: ${data.get('email')}`,
@@ -751,11 +769,36 @@
       `Package interested in: ${data.get('plan') || 'Not sure yet'}`,
       `Goal: ${data.get('goal') || '—'}`
     ].join('%0D%0A');
-
     const mailto = `mailto:shreyam.training@gmail.com?subject=${encodeURIComponent('New training registration — ' + data.get('name'))}&body=${body}`;
     window.location.href = mailto;
+  }
 
-    document.getElementById('formMsg').classList.add('show');
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const data = new FormData(this);
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+
+    const { error } = await supabaseClient.from('registrations').insert({
+      name: data.get('name'),
+      email: data.get('email'),
+      phone: data.get('phone') || null,
+      mode: data.get('mode'),
+      plan: data.get('plan') || null,
+      goal: data.get('goal') || null
+    });
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Send registration';
+
+    if (error){
+      console.error('Supabase insert failed:', error);
+      showMsg("Something went wrong saving that — opening your email app as a backup so your info still reaches me.", true);
+      mailtoFallback(data);
+    } else {
+      showMsg("Thanks — your registration is in. I'll follow up within a day or two.", false);
+      form.reset();
+    }
   });
 </script>
 
