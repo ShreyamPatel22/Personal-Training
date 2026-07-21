@@ -787,7 +787,7 @@
         <div class="field full">
           <button type="submit" class="btn btn-primary" style="width:100%;">Request consultation</button>
         </div>
-        <div class="form-msg success" id="formMsg">Thanks — your email app should have opened with your details filled in. Send it and I'll follow up within 24 hours.</div>
+        <div class="form-msg success" id="formMsg" role="status" aria-live="polite"></div>
       </form>
     </div>
   </section>
@@ -839,13 +839,11 @@
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   // ---------- Registration form ----------
-  // Writes straight into the `registrations` table in Supabase.
-  // Falls back to opening an email if the database write fails for
-  // any reason (offline, Supabase down, etc.) so a submission is
-  // never silently lost.
+  // Saves consultation requests directly to the `registrations` table in Supabase.
   const form = document.getElementById('registerForm');
   const formMsg = document.getElementById('formMsg');
   const submitBtn = form.querySelector('button[type="submit"]');
+  const defaultButtonText = submitBtn.textContent;
 
   function showMsg(text, isError){
     formMsg.textContent = text;
@@ -854,46 +852,45 @@
     formMsg.style.color = isError ? '#A13D2D' : '';
     if (!isError) formMsg.classList.add('success');
     formMsg.classList.add('show');
-  }
-
-  function mailtoFallback(data){
-    const body = [
-      `Name: ${data.get('name')}`,
-      `Email: ${data.get('email')}`,
-      `Phone: ${data.get('phone') || '—'}`,
-      `Preferred training: ${data.get('mode')}`,
-      `Package interested in: ${data.get('plan') || 'Not sure yet'}`,
-      `Goal: ${data.get('goal') || '—'}`
-    ].join('%0D%0A');
-    const mailto = `mailto:shreyam.training@gmail.com?subject=${encodeURIComponent('New training registration — ' + data.get('name'))}&body=${body}`;
-    window.location.href = mailto;
+    formMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   form.addEventListener('submit', async function(e){
     e.preventDefault();
+
+    // Prevent accidental duplicate submissions while the request is processing.
+    if (submitBtn.disabled) return;
+
     const data = new FormData(this);
+    formMsg.classList.remove('show');
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
+    submitBtn.setAttribute('aria-busy', 'true');
+    submitBtn.textContent = 'Submitting...';
 
-    const { error } = await supabaseClient.from('registrations').insert({
-      name: data.get('name'),
-      email: data.get('email'),
-      phone: data.get('phone') || null,
-      mode: data.get('mode'),
-      plan: data.get('plan') || null,
-      goal: data.get('goal') || null
-    });
+    try {
+      const { error } = await supabaseClient.from('registrations').insert({
+        name: data.get('name'),
+        email: data.get('email'),
+        phone: data.get('phone') || null,
+        mode: data.get('mode'),
+        plan: data.get('plan') || null,
+        goal: data.get('goal') || null
+      });
 
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Request consultation';
+      if (error) throw error;
 
-    if (error){
-      console.error('Supabase insert failed:', error);
-      showMsg("Something went wrong saving that — opening your email app as a backup so your info still reaches me.", true);
-      mailtoFallback(data);
-    } else {
-      showMsg("Thanks — your consultation request is in. I'll follow up within 24 hours.", false);
       form.reset();
+      showMsg("Thanks — your consultation request is in. I'll follow up within 24 hours.", false);
+    } catch (error) {
+      console.error('Supabase insert failed:', error);
+      showMsg(
+        "I couldn't submit your request right now. Please try again, or email shreyam.training@gmail.com.",
+        true
+      );
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.removeAttribute('aria-busy');
+      submitBtn.textContent = defaultButtonText;
     }
   });
 </script>
