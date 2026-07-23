@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Login — Shreyam Patel Training</title>
+<meta name="description" content="Sign up or log in to the Shreyam Patel Training client portal.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="portal.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+<header class="site-nav"><div class="nav-inner">
+  <a href="index.html" class="logo"><span class="logo-mark"></span>Shreyam Patel</a>
+  <nav class="nav-links"><a href="index.html#about">About</a><a href="index.html#modes">Training</a><a href="index.html#pricing">Pricing</a><a href="index.html#register">Contact</a></nav>
+  <a href="index.html#register" class="btn btn-primary btn-small">Book a consultation</a>
+</div></header>
+<main class="auth-shell"><div class="wrap auth-grid">
+  <section class="intro"><span class="eyebrow">Client portal</span><h1>Your coaching,<br>all in one place.</h1>
+    <p>Create an account or log in to view your coaching information, consultation status, upcoming sessions, and assigned plan.</p>
+    <span class="credential-chip">Secure account powered by Supabase</span>
+  </section>
+  <section class="card" aria-labelledby="authTitle">
+    <div class="tabs" role="tablist"><button class="tab active" id="loginTab" type="button">Log in</button><button class="tab" id="signupTab" type="button">Create account</button></div>
+    <h2 id="authTitle" style="font-size:32px;margin-bottom:20px;">Welcome back</h2>
+    <form id="authForm">
+      <div class="field hidden" id="nameField"><label for="fullName">Full name</label><input id="fullName" name="fullName" autocomplete="name"></div>
+      <div class="field"><label for="email">Email</label><input type="email" id="email" name="email" autocomplete="email" required></div>
+      <div class="field"><label for="password">Password</label><input type="password" id="password" name="password" minlength="8" autocomplete="current-password" required><p class="help" id="passwordHelp">Use the password connected to your client account.</p></div>
+      <button class="btn btn-primary" id="submitBtn" type="submit">Log in</button>
+      <button class="btn btn-ghost" id="resetBtn" type="button">Forgot password?</button>
+      <div class="msg" id="authMsg" role="status" aria-live="polite"></div>
+    </form>
+  </section>
+</div></main>
+<footer><div class="wrap footer-inner"><p>&copy; <span id="year"></span> Shreyam Patel Training · Charlotte, NC</p><a href="index.html">Return to website</a></div></footer>
+<script>
+const SUPABASE_URL='https://cdgnobnqzdzqafmgzfrd.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZ25vYm5xemR6cWFmbWd6ZnJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1OTQ4ODEsImV4cCI6MjEwMDE3MDg4MX0.kWwz2h8xZRO72qRCtBCMWECZAkiNGnGJ-b3HY9Mhxjs';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const form=document.getElementById('authForm'),loginTab=document.getElementById('loginTab'),signupTab=document.getElementById('signupTab'),nameField=document.getElementById('nameField'),title=document.getElementById('authTitle'),submitBtn=document.getElementById('submitBtn'),resetBtn=document.getElementById('resetBtn'),msg=document.getElementById('authMsg'),password=document.getElementById('password'),passwordHelp=document.getElementById('passwordHelp');
+let mode='login';document.getElementById('year').textContent=new Date().getFullYear();
+function show(text,type){msg.textContent=text;msg.className='msg show '+type}
+function setMode(next){mode=next;const signup=mode==='signup';loginTab.classList.toggle('active',!signup);signupTab.classList.toggle('active',signup);nameField.classList.toggle('hidden',!signup);title.textContent=signup?'Create your account':'Welcome back';submitBtn.textContent=signup?'Create account':'Log in';resetBtn.classList.toggle('hidden',signup);password.autocomplete=signup?'new-password':'current-password';passwordHelp.textContent=signup?'Use at least 8 characters.':'Use the password connected to your client account.';msg.className='msg';}
+loginTab.onclick=()=>setMode('login');signupTab.onclick=()=>setMode('signup');
+(async()=>{const {data}=await db.auth.getSession();if(data.session) location.href='dashboard.html';})();
+form.addEventListener('submit',async e=>{e.preventDefault();if(submitBtn.disabled)return;submitBtn.disabled=true;const original=submitBtn.textContent;submitBtn.textContent=mode==='signup'?'Creating account...':'Logging in...';msg.className='msg';
+ try{const email=form.email.value.trim(),pwd=form.password.value;if(mode==='signup'){
+   const fullName=form.fullName.value.trim();if(!fullName)throw new Error('Please enter your full name.');
+   const options={data:{full_name:fullName}};if(location.protocol!=='file:') options.emailRedirectTo=new URL('dashboard.html',location.href).href;
+   const {data,error}=await db.auth.signUp({email,password:pwd,options});if(error)throw error;
+   if(data.session){location.href='dashboard.html'}else{show('Account created. Check your email to confirm your address, then log in.','success');form.reset();}
+ }else{const {error}=await db.auth.signInWithPassword({email,password:pwd});if(error)throw error;location.href='dashboard.html';}}
+ catch(err){show(err.message||'Something went wrong. Please try again.','error')}finally{submitBtn.disabled=false;submitBtn.textContent=original;}});
+resetBtn.addEventListener('click',async()=>{const email=form.email.value.trim();if(!email){show('Enter your email first, then select Forgot password.','error');return}resetBtn.disabled=true;try{const options={};if(location.protocol!=='file:')options.redirectTo=new URL('login.html',location.href).href;const {error}=await db.auth.resetPasswordForEmail(email,options);if(error)throw error;show('Password reset email sent.','success')}catch(err){show(err.message,'error')}finally{resetBtn.disabled=false}});
+</script>
+</body></html>
