@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Client Dashboard — Shreyam Patel Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="portal.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script></head>
+<body>
+<header class="site-nav"><div class="nav-inner"><a href="index.html" class="logo"><span class="logo-mark"></span>Shreyam Patel</a><nav class="nav-links"><a href="index.html">Main site</a><a href="index.html#register">Contact</a></nav><button id="signOutBtn" class="btn btn-ghost btn-small">Sign out</button></div></header>
+<main class="dashboard-shell"><div class="wrap">
+<section class="dashboard-head"><div><span class="eyebrow">Client dashboard</span><h1 id="welcomeTitle">Welcome back.</h1><p id="welcomeSub">Loading your coaching information...</p></div><a href="mailto:shreyam.training@gmail.com" class="btn btn-primary">Message your coach</a></section>
+<div class="msg" id="pageMsg" role="status" aria-live="polite"></div>
+<section class="grid" id="dashboardGrid">
+ <article class="panel span-4"><p class="kicker">Consultation status</p><div class="value" id="consultStatus">Loading</div><p class="muted" style="margin-top:10px;">Your latest consultation request.</p></article>
+ <article class="panel span-4"><p class="kicker">Coaching package</p><div class="value" id="packageValue">Not assigned</div><p class="muted" style="margin-top:10px;">Your current or requested coaching option.</p></article>
+ <article class="panel span-4"><p class="kicker">Payment status</p><div class="value" id="paymentValue">Not started</div><p class="muted" style="margin-top:10px;">Stripe payments will be connected in Step 6.</p></article>
+ <article class="panel span-6"><h2>Your information</h2><ul class="detail-list"><li><strong>Name</strong><span id="clientName">—</span></li><li><strong>Email</strong><span id="clientEmail">—</span></li><li><strong>Phone</strong><span id="clientPhone">—</span></li><li><strong>Training format</strong><span id="clientMode">—</span></li></ul></article>
+ <article class="panel span-6"><h2>Main goal</h2><div class="empty" id="goalValue">No goal has been connected to this account yet.</div></article>
+ <article class="panel span-6"><h2>Upcoming sessions</h2><div class="empty">Scheduling is coming in Step 5. Your booked sessions will appear here.</div></article>
+ <article class="panel span-6"><h2>Assigned workout plan</h2><div class="empty">No workout plan has been assigned yet. Once coaching begins, your current plan will appear here.</div></article>
+</section></div></main>
+<footer><div class="wrap footer-inner"><p>&copy; <span id="year"></span> Shreyam Patel Training · Client Portal</p><a href="mailto:shreyam.training@gmail.com">shreyam.training@gmail.com</a></div></footer>
+<script>
+const SUPABASE_URL='https://cdgnobnqzdzqafmgzfrd.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZ25vYm5xemR6cWFmbWd6ZnJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1OTQ4ODEsImV4cCI6MjEwMDE3MDg4MX0.kWwz2h8xZRO72qRCtBCMWECZAkiNGnGJ-b3HY9Mhxjs';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);document.getElementById('year').textContent=new Date().getFullYear();
+function text(id,value){document.getElementById(id).textContent=value||'—'}function show(textValue,type='error'){const el=document.getElementById('pageMsg');el.textContent=textValue;el.className='msg show '+type}
+async function load(){const {data:{session}}=await db.auth.getSession();if(!session){location.replace('login.html');return}const user=session.user;const fullName=user.user_metadata?.full_name||user.email.split('@')[0];text('welcomeTitle',`Welcome, ${fullName}.`);text('welcomeSub','Here is the latest information connected to your coaching account.');text('clientName',fullName);text('clientEmail',user.email);
+ try{await db.rpc('claim_my_registrations');const {data,error}=await db.from('registrations').select('name,email,phone,mode,plan,goal,status,payment_status,created_at').order('created_at',{ascending:false}).limit(1).maybeSingle();if(error)throw error;if(!data){text('consultStatus','No request');show('No consultation request is connected to this account yet. Submit the consultation form using the same email address, then refresh this page.','success');return}
+ text('clientName',data.name||fullName);text('clientPhone',data.phone||'Not provided');text('clientMode',data.mode||'Not selected');text('packageValue',data.plan||'Not selected');text('goalValue',data.goal||'No goal provided');text('consultStatus',data.status||'Submitted');text('paymentValue',data.payment_status||'Not started');
+ }catch(err){console.error(err);show('Your account is active, but the client portal database setup is not complete yet. Run setup_client_portal.sql in Supabase, then refresh.');}}
+ document.getElementById('signOutBtn').onclick=async()=>{await db.auth.signOut();location.replace('login.html')};load();
+</script></body></html>
