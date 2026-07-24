@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coach Schedule — Shreyam Patel Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="portal.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+<header class="site-nav"><div class="nav-inner">
+<a href="index.html" class="logo"><span class="logo-mark"></span>Shreyam Patel</a>
+<nav class="nav-links"><a href="index.html">Main site</a><a href="dashboard.html">Client view</a></nav>
+<button id="signOutBtn" class="btn btn-ghost btn-small">Sign out</button>
+</div></header>
+
+<main class="dashboard-shell"><div class="wrap">
+<section class="dashboard-head">
+<div><span class="eyebrow">Coach scheduling</span><h1>Manage availability.</h1><p>Create appointment times and see who has booked.</p></div>
+<button class="btn btn-ghost" id="refreshBtn" type="button">Refresh schedule</button>
+</section>
+
+<div class="msg" id="coachMsg" role="status" aria-live="polite"></div>
+
+<section class="grid">
+<article class="panel span-4">
+<h2>Add available time</h2>
+<form id="slotForm">
+<div class="field"><label for="slotDate">Date</label><input type="date" id="slotDate" required></div>
+<div class="field"><label for="startTime">Start time</label><input type="time" id="startTime" required></div>
+<div class="field"><label for="duration">Duration</label><select id="duration"><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60" selected>60 minutes</option><option value="90">90 minutes</option></select></div>
+<div class="field"><label for="slotMode">Format</label><select id="slotMode"><option value="Online">Online</option><option value="In-person">In-person</option></select></div>
+<div class="field"><label for="slotLocation">Location</label><input type="text" id="slotLocation" placeholder="Gym, studio, or address"></div>
+<div class="field"><label for="meetingUrl">Meeting link</label><input type="url" id="meetingUrl" placeholder="https://meet.google.com/..."></div>
+<button class="btn btn-primary" id="createSlotBtn" type="submit">Create time slot</button>
+</form>
+</article>
+
+<article class="panel span-8">
+<div class="panel-heading"><div><h2>Upcoming schedule</h2><p class="muted">Booked clients and open appointment times.</p></div></div>
+<div id="coachSchedule" class="stack-list"><div class="empty">Loading schedule...</div></div>
+</article>
+</section>
+</div></main>
+
+<footer><div class="wrap footer-inner"><p>&copy; <span id="year"></span> Shreyam Patel Training · Coach Portal</p><a href="mailto:shreyam.training@gmail.com">shreyam.training@gmail.com</a></div></footer>
+
+<script>
+const SUPABASE_URL='https://cdgnobnqzdzqafmgzfrd.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZ25vYm5xemR6cWFmbWd6ZnJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1OTQ4ODEsImV4cCI6MjEwMDE3MDg4MX0.kWwz2h8xZRO72qRCtBCMWECZAkiNGnGJ-b3HY9Mhxjs';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+document.getElementById('year').textContent=new Date().getFullYear();
+
+function show(v,t='error'){const e=document.getElementById('coachMsg');e.textContent=v;e.className='msg show '+t}
+function clearMessage(){document.getElementById('coachMsg').className='msg'}
+function esc(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function fmt(iso){const d=new Date(iso);return{date:d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}),time:d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}}
+
+function render(rows){
+const c=document.getElementById('coachSchedule');
+if(!rows.length){c.innerHTML='<div class="empty">No upcoming slots yet. Create one using the form.</div>';return}
+c.innerHTML=rows.map(r=>{
+const s=fmt(r.starts_at),e=new Date(r.ends_at).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}),booked=Boolean(r.booking_id);
+return `<div class="session-card"><div class="session-main">
+<span class="status ${booked?'status-confirmed':''}">${booked?'Booked':'Open'}</span>
+<h3>${esc(s.date)} · ${esc(s.time)}–${esc(e)}</h3>
+<p class="muted">${esc(r.mode)}${r.location?' · '+esc(r.location):''}</p>
+${booked?`<p><strong>${esc(r.client_name||'Client')}</strong><br><span class="muted">${esc(r.client_email||'')}</span></p>`:'<p class="muted">No client has booked this time.</p>'}
+</div>
+${booked?`<button class="btn btn-danger btn-small coach-cancel" data-booking-id="${esc(r.booking_id)}">Cancel booking</button>`:`<button class="btn btn-danger btn-small remove-slot" data-slot-id="${esc(r.slot_id)}">Remove slot</button>`}
+</div>`}).join('');
+c.querySelectorAll('.remove-slot').forEach(b=>b.onclick=()=>removeSlot(b));
+c.querySelectorAll('.coach-cancel').forEach(b=>b.onclick=()=>cancelBooking(b));
+}
+
+async function loadSchedule(){
+clearMessage();const b=document.getElementById('refreshBtn');b.disabled=true;b.textContent='Loading...';
+try{const {data,error}=await db.rpc('coach_list_schedule');if(error)throw error;render(data||[])}
+catch(e){console.error(e);show(e.message||'Could not load the coach schedule.');document.getElementById('coachSchedule').innerHTML='<div class="empty">Coach access is required. Make sure your login email is listed in coach_emails.</div>'}
+finally{b.disabled=false;b.textContent='Refresh schedule'}
+}
+
+async function removeSlot(b){
+if(!confirm('Remove this open appointment time?'))return;b.disabled=true;
+try{const {error}=await db.rpc('coach_deactivate_slot',{p_slot_id:b.dataset.slotId});if(error)throw error;show('The appointment time was removed.','success');await loadSchedule()}
+catch(e){show(e.message||'The slot could not be removed.')}finally{b.disabled=false}
+}
+async function cancelBooking(b){
+if(!confirm('Cancel this client booking?'))return;b.disabled=true;
+try{const {error}=await db.rpc('coach_cancel_booking',{p_booking_id:b.dataset.bookingId});if(error)throw error;show('The booking was cancelled and the time is open again.','success');await loadSchedule()}
+catch(e){show(e.message||'The booking could not be cancelled.')}finally{b.disabled=false}
+}
+
+document.getElementById('slotForm').addEventListener('submit',async event=>{
+event.preventDefault();clearMessage();const b=document.getElementById('createSlotBtn');b.disabled=true;b.textContent='Creating...';
+try{
+const date=document.getElementById('slotDate').value,time=document.getElementById('startTime').value,duration=Number(document.getElementById('duration').value);
+const starts=new Date(`${date}T${time}:00`),ends=new Date(starts.getTime()+duration*60000);
+if(Number.isNaN(starts.getTime()))throw new Error('Enter a valid date and time.');
+const {error}=await db.rpc('coach_create_slot',{
+p_starts_at:starts.toISOString(),p_ends_at:ends.toISOString(),p_mode:document.getElementById('slotMode').value,
+p_location:document.getElementById('slotLocation').value.trim()||null,p_meeting_url:document.getElementById('meetingUrl').value.trim()||null
+});
+if(error)throw error;show('The appointment time is now available to clients.','success');event.target.reset();await loadSchedule();
+}catch(e){console.error(e);show(e.message||'The appointment time could not be created.')}
+finally{b.disabled=false;b.textContent='Create time slot'}
+});
+
+document.getElementById('refreshBtn').onclick=loadSchedule;
+document.getElementById('signOutBtn').onclick=async()=>{await db.auth.signOut();location.replace('login.html')};
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.replace('login.html');return}loadSchedule()})();
+</script>
+</body></html>
