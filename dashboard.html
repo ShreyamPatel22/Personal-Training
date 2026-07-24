@@ -1,31 +1,272 @@
-<!DOCTYPE html><html lang="en"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Client Dashboard — Shreyam Patel Training</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Dashboard — Shreyam Patel Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="portal.css"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script></head>
+<link rel="stylesheet" href="portal.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
 <body>
-<header class="site-nav"><div class="nav-inner"><a href="index.html" class="logo"><span class="logo-mark"></span>Shreyam Patel</a><nav class="nav-links"><a href="index.html">Main site</a><a href="index.html#register">Contact</a></nav><button id="signOutBtn" class="btn btn-ghost btn-small">Sign out</button></div></header>
+<header class="site-nav">
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><span class="logo-mark"></span>Shreyam Patel</a>
+    <nav class="nav-links">
+      <a href="index.html">Main site</a>
+      <a href="#scheduling">Scheduling</a>
+      <a href="index.html#register">Contact</a>
+    </nav>
+    <button id="signOutBtn" class="btn btn-ghost btn-small">Sign out</button>
+  </div>
+</header>
+
 <main class="dashboard-shell"><div class="wrap">
-<section class="dashboard-head"><div><span class="eyebrow">Client dashboard</span><h1 id="welcomeTitle">Welcome back.</h1><p id="welcomeSub">Loading your coaching information...</p></div><a href="mailto:shreyam.training@gmail.com" class="btn btn-primary">Message your coach</a></section>
+<section class="dashboard-head">
+  <div>
+    <span class="eyebrow">Client dashboard</span>
+    <h1 id="welcomeTitle">Welcome back.</h1>
+    <p id="welcomeSub">Loading your coaching information...</p>
+  </div>
+  <a href="mailto:shreyam.training@gmail.com" class="btn btn-primary">Message your coach</a>
+</section>
+
 <div class="msg" id="pageMsg" role="status" aria-live="polite"></div>
+
 <section class="grid" id="dashboardGrid">
- <article class="panel span-4"><p class="kicker">Consultation status</p><div class="value" id="consultStatus">Loading</div><p class="muted" style="margin-top:10px;">Your latest consultation request.</p></article>
- <article class="panel span-4"><p class="kicker">Coaching package</p><div class="value" id="packageValue">Not assigned</div><p class="muted" style="margin-top:10px;">Your current or requested coaching option.</p></article>
- <article class="panel span-4"><p class="kicker">Payment status</p><div class="value" id="paymentValue">Not started</div><p class="muted" style="margin-top:10px;">Stripe payments will be connected in Step 6.</p></article>
- <article class="panel span-6"><h2>Your information</h2><ul class="detail-list"><li><strong>Name</strong><span id="clientName">—</span></li><li><strong>Email</strong><span id="clientEmail">—</span></li><li><strong>Phone</strong><span id="clientPhone">—</span></li><li><strong>Training format</strong><span id="clientMode">—</span></li></ul></article>
- <article class="panel span-6"><h2>Main goal</h2><div class="empty" id="goalValue">No goal has been connected to this account yet.</div></article>
- <article class="panel span-6"><h2>Upcoming sessions</h2><div class="empty">Scheduling is coming in Step 5. Your booked sessions will appear here.</div></article>
- <article class="panel span-6"><h2>Assigned workout plan</h2><div class="empty">No workout plan has been assigned yet. Once coaching begins, your current plan will appear here.</div></article>
-</section></div></main>
-<footer><div class="wrap footer-inner"><p>&copy; <span id="year"></span> Shreyam Patel Training · Client Portal</p><a href="mailto:shreyam.training@gmail.com">shreyam.training@gmail.com</a></div></footer>
+  <article class="panel span-4"><p class="kicker">Consultation status</p><div class="value" id="consultStatus">Loading</div><p class="muted" style="margin-top:10px;">Your latest consultation request.</p></article>
+  <article class="panel span-4"><p class="kicker">Coaching package</p><div class="value" id="packageValue">Not assigned</div><p class="muted" style="margin-top:10px;">Your current or requested coaching option.</p></article>
+  <article class="panel span-4"><p class="kicker">Payment status</p><div class="value" id="paymentValue">Not started</div><p class="muted" style="margin-top:10px;">Stripe payments will be connected in Step 6.</p></article>
+
+  <article class="panel span-6">
+    <h2>Your information</h2>
+    <ul class="detail-list">
+      <li><strong>Name</strong><span id="clientName">—</span></li>
+      <li><strong>Email</strong><span id="clientEmail">—</span></li>
+      <li><strong>Phone</strong><span id="clientPhone">—</span></li>
+      <li><strong>Training format</strong><span id="clientMode">—</span></li>
+    </ul>
+  </article>
+
+  <article class="panel span-6">
+    <h2>Main goal</h2>
+    <div class="empty" id="goalValue">No goal has been connected to this account yet.</div>
+  </article>
+
+  <article class="panel span-12" id="scheduling">
+    <div class="panel-heading">
+      <div>
+        <p class="kicker">Step 5</p>
+        <h2>Schedule a session</h2>
+        <p class="muted">Choose an available time. All times display in your device's local time zone.</p>
+      </div>
+      <button class="btn btn-ghost btn-small" id="refreshScheduleBtn" type="button">Refresh</button>
+    </div>
+
+    <div class="msg" id="scheduleMsg" role="status" aria-live="polite"></div>
+
+    <div class="schedule-layout">
+      <section>
+        <h3 class="subheading">Upcoming sessions</h3>
+        <div id="upcomingSessions" class="stack-list">
+          <div class="empty">Loading your sessions...</div>
+        </div>
+      </section>
+
+      <section>
+        <h3 class="subheading">Available times</h3>
+        <div id="availableSlots" class="stack-list">
+          <div class="empty">Loading available times...</div>
+        </div>
+      </section>
+    </div>
+  </article>
+
+  <article class="panel span-12">
+    <h2>Assigned workout plan</h2>
+    <div class="empty">No workout plan has been assigned yet. Once coaching begins, your current plan will appear here.</div>
+  </article>
+</section>
+</div></main>
+
+<footer><div class="wrap footer-inner">
+  <p>&copy; <span id="year"></span> Shreyam Patel Training · Client Portal</p>
+  <a href="mailto:shreyam.training@gmail.com">shreyam.training@gmail.com</a>
+</div></footer>
+
 <script>
 const SUPABASE_URL='https://cdgnobnqzdzqafmgzfrd.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkZ25vYm5xemR6cWFmbWd6ZnJkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ1OTQ4ODEsImV4cCI6MjEwMDE3MDg4MX0.kWwz2h8xZRO72qRCtBCMWECZAkiNGnGJ-b3HY9Mhxjs';
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);document.getElementById('year').textContent=new Date().getFullYear();
-function text(id,value){document.getElementById(id).textContent=value||'—'}function show(textValue,type='error'){const el=document.getElementById('pageMsg');el.textContent=textValue;el.className='msg show '+type}
-async function load(){const {data:{session}}=await db.auth.getSession();if(!session){location.replace('login.html');return}const user=session.user;const fullName=user.user_metadata?.full_name||user.email.split('@')[0];text('welcomeTitle',`Welcome, ${fullName}.`);text('welcomeSub','Here is the latest information connected to your coaching account.');text('clientName',fullName);text('clientEmail',user.email);
- try{await db.rpc('claim_my_registrations');const {data,error}=await db.from('registrations').select('name,email,phone,mode,plan,goal,status,payment_status,created_at').order('created_at',{ascending:false}).limit(1).maybeSingle();if(error)throw error;if(!data){text('consultStatus','No request');show('No consultation request is connected to this account yet. Submit the consultation form using the same email address, then refresh this page.','success');return}
- text('clientName',data.name||fullName);text('clientPhone',data.phone||'Not provided');text('clientMode',data.mode||'Not selected');text('packageValue',data.plan||'Not selected');text('goalValue',data.goal||'No goal provided');text('consultStatus',data.status||'Submitted');text('paymentValue',data.payment_status||'Not started');
- }catch(err){console.error(err);show('Your account is active, but the client portal database setup is not complete yet. Run setup_client_portal.sql in Supabase, then refresh.');}}
- document.getElementById('signOutBtn').onclick=async()=>{await db.auth.signOut();location.replace('login.html')};load();
-</script></body></html>
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+document.getElementById('year').textContent=new Date().getFullYear();
+
+function text(id,value){document.getElementById(id).textContent=value||'—'}
+function showPageMessage(value,type='error'){const el=document.getElementById('pageMsg');el.textContent=value;el.className='msg show '+type}
+function showScheduleMessage(value,type='error'){const el=document.getElementById('scheduleMsg');el.textContent=value;el.className='msg show '+type}
+function clearScheduleMessage(){document.getElementById('scheduleMsg').className='msg'}
+function escapeHtml(value=''){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function formatDateTime(iso){
+  const d=new Date(iso);
+  return {
+    date:d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}),
+    time:d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})
+  };
+}
+
+function renderUpcoming(bookings){
+  const container=document.getElementById('upcomingSessions');
+  if(!bookings.length){
+    container.innerHTML='<div class="empty">You do not have an upcoming session yet.</div>';
+    return;
+  }
+  container.innerHTML=bookings.map(item=>{
+    const start=formatDateTime(item.starts_at);
+    const end=new Date(item.ends_at).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+    const access=item.mode==='Online'
+      ? (item.meeting_url
+          ? `<a class="inline-link" href="${escapeHtml(item.meeting_url)}" target="_blank" rel="noopener">Open meeting link</a>`
+          : 'Meeting link will be added before the session.')
+      : escapeHtml(item.location||'Location will be confirmed.');
+    return `<div class="session-card">
+      <div class="session-main">
+        <span class="status status-confirmed">${escapeHtml(item.status)}</span>
+        <h3>${escapeHtml(start.date)}</h3>
+        <p class="session-time">${escapeHtml(start.time)}–${escapeHtml(end)}</p>
+        <p class="muted">${escapeHtml(item.mode)} · ${access}</p>
+      </div>
+      <button class="btn btn-danger btn-small cancel-booking" data-booking-id="${escapeHtml(item.booking_id)}" type="button">Cancel session</button>
+    </div>`;
+  }).join('');
+  container.querySelectorAll('.cancel-booking').forEach(button=>button.addEventListener('click',()=>cancelBooking(button)));
+}
+
+function renderAvailable(slots){
+  const container=document.getElementById('availableSlots');
+  if(!slots.length){
+    container.innerHTML='<div class="empty">No appointment times are available right now. Check back soon or message your coach.</div>';
+    return;
+  }
+  container.innerHTML=slots.map(slot=>{
+    const start=formatDateTime(slot.starts_at);
+    const end=new Date(slot.ends_at).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+    const detail=slot.mode==='Online'?'Online session':(slot.location||'In-person location to be confirmed');
+    return `<div class="slot-card">
+      <div>
+        <p class="slot-date">${escapeHtml(start.date)}</p>
+        <p class="slot-time">${escapeHtml(start.time)}–${escapeHtml(end)}</p>
+        <p class="muted">${escapeHtml(detail)}</p>
+      </div>
+      <button class="btn btn-primary btn-small book-slot" data-slot-id="${escapeHtml(slot.slot_id)}" type="button">Book time</button>
+    </div>`;
+  }).join('');
+  container.querySelectorAll('.book-slot').forEach(button=>button.addEventListener('click',()=>bookSlot(button)));
+}
+
+async function loadSchedule(){
+  clearScheduleMessage();
+  const refresh=document.getElementById('refreshScheduleBtn');
+  refresh.disabled=true;
+  refresh.textContent='Loading...';
+  try{
+    const [bookingsResult,slotsResult]=await Promise.all([
+      db.rpc('get_my_upcoming_bookings'),
+      db.rpc('list_available_slots')
+    ]);
+    if(bookingsResult.error)throw bookingsResult.error;
+    if(slotsResult.error)throw slotsResult.error;
+    renderUpcoming(bookingsResult.data||[]);
+    renderAvailable(slotsResult.data||[]);
+  }catch(error){
+    console.error(error);
+    document.getElementById('upcomingSessions').innerHTML='<div class="empty">Scheduling could not be loaded.</div>';
+    document.getElementById('availableSlots').innerHTML='<div class="empty">Run setup_scheduling.sql and expose the scheduling functions in Supabase.</div>';
+    showScheduleMessage(error.message||'Scheduling could not be loaded.');
+  }finally{
+    refresh.disabled=false;
+    refresh.textContent='Refresh';
+  }
+}
+
+async function bookSlot(button){
+  if(!window.confirm('Book this appointment time?'))return;
+  button.disabled=true;
+  const original=button.textContent;
+  button.textContent='Booking...';
+  clearScheduleMessage();
+  try{
+    const {error}=await db.rpc('book_session',{p_slot_id:button.dataset.slotId,p_notes:null});
+    if(error)throw error;
+    showScheduleMessage('Your session is booked. It now appears under Upcoming sessions.','success');
+    await loadSchedule();
+  }catch(error){
+    console.error(error);
+    showScheduleMessage(error.message||'That time could not be booked. It may have just been taken.');
+  }finally{
+    button.disabled=false;
+    button.textContent=original;
+  }
+}
+
+async function cancelBooking(button){
+  if(!window.confirm('Cancel this session? The time will become available to other clients again.'))return;
+  button.disabled=true;
+  const original=button.textContent;
+  button.textContent='Cancelling...';
+  clearScheduleMessage();
+  try{
+    const {error}=await db.rpc('cancel_my_booking',{p_booking_id:button.dataset.bookingId});
+    if(error)throw error;
+    showScheduleMessage('Your session was cancelled.','success');
+    await loadSchedule();
+  }catch(error){
+    console.error(error);
+    showScheduleMessage(error.message||'The session could not be cancelled.');
+  }finally{
+    button.disabled=false;
+    button.textContent=original;
+  }
+}
+
+async function load(){
+  const {data:{session}}=await db.auth.getSession();
+  if(!session){location.replace('login.html');return}
+  const user=session.user;
+  const fullName=user.user_metadata?.full_name||user.email.split('@')[0];
+  text('welcomeTitle',`Welcome, ${fullName}.`);
+  text('welcomeSub','Here is the latest information connected to your coaching account.');
+  text('clientName',fullName);
+  text('clientEmail',user.email);
+
+  try{
+    await db.rpc('claim_my_registrations');
+    const {data,error}=await db.from('registrations')
+      .select('name,email,phone,mode,plan,goal,status,payment_status,created_at')
+      .order('created_at',{ascending:false}).limit(1).maybeSingle();
+    if(error)throw error;
+    if(!data){
+      text('consultStatus','No request');
+      showPageMessage('No consultation request is connected to this account yet. Submit the consultation form using the same email address, then refresh this page.','success');
+    }else{
+      text('clientName',data.name||fullName);
+      text('clientPhone',data.phone||'Not provided');
+      text('clientMode',data.mode||'Not selected');
+      text('packageValue',data.plan||'Not selected');
+      text('goalValue',data.goal||'No goal provided');
+      text('consultStatus',data.status||'Submitted');
+      text('paymentValue',data.payment_status||'Not started');
+    }
+  }catch(error){
+    console.error(error);
+    showPageMessage('Your account is active, but the client portal database setup is not complete yet. Run setup_client_portal.sql in Supabase, then refresh.');
+  }
+  await loadSchedule();
+}
+
+document.getElementById('refreshScheduleBtn').addEventListener('click',loadSchedule);
+document.getElementById('signOutBtn').addEventListener('click',async()=>{await db.auth.signOut();location.replace('login.html')});
+load();
+</script>
+</body>
+</html>

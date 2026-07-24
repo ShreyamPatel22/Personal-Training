@@ -27,3 +27,25 @@ footer{border-top:1px solid var(--line);padding:36px 0;background:var(--paper-al
 .hidden{display:none!important}
 @media(max-width:860px){.auth-grid{grid-template-columns:1fr}.nav-links{display:none}.auth-shell{padding:52px 0 64px}.grid{grid-template-columns:1fr}.span-4,.span-6,.span-8,.span-12{grid-column:1}.dashboard-head{align-items:start;flex-direction:column}.card{padding:24px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+
+
+/* ---------- STEP 5: SCHEDULING ---------- */
+.btn-danger{background:transparent;border-color:var(--danger);color:var(--danger)}
+.btn-danger:hover:not(:disabled){background:var(--danger);color:var(--white)}
+.status-confirmed{background:var(--teal-soft);color:var(--teal)}
+.panel-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:24px}
+.panel-heading h2{margin-bottom:8px}
+.schedule-layout{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+.subheading{font-size:21px;margin-bottom:14px}
+.stack-list{display:grid;gap:12px}
+.session-card,.slot-card{border:1px solid var(--line);background:var(--paper);padding:18px;display:flex;justify-content:space-between;align-items:center;gap:18px}
+.session-card h3{font-size:22px;margin:10px 0 6px}
+.session-time,.slot-time{font-family:var(--font-mono);font-weight:600;color:var(--ink);margin-bottom:5px}
+.slot-date{font-weight:600;margin-bottom:2px}
+.inline-link{color:var(--navy);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:860px){
+  .schedule-layout{grid-template-columns:1fr}
+  .panel-heading{align-items:flex-start;flex-direction:column}
+  .session-card,.slot-card{align-items:flex-start;flex-direction:column}
+  .session-card .btn,.slot-card .btn{width:100%;text-align:center}
+}
