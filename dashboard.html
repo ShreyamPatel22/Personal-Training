@@ -38,7 +38,11 @@
 <section class="grid" id="dashboardGrid">
   <article class="panel span-4"><p class="kicker">Consultation status</p><div class="value" id="consultStatus">Loading</div><p class="muted" style="margin-top:10px;">Your latest consultation request.</p></article>
   <article class="panel span-4"><p class="kicker">Coaching package</p><div class="value" id="packageValue">Not assigned</div><p class="muted" style="margin-top:10px;">Your current or requested coaching option.</p></article>
-  <article class="panel span-4"><p class="kicker">Payment status</p><div class="value" id="paymentValue">Not started</div><p class="muted" style="margin-top:10px;">Stripe payments will be connected in Step 6.</p></article>
+  <article class="panel span-4">
+      <p class="kicker">Payment status</p>
+      <div class="value" id="paymentValue">Loading</div>
+      <p class="muted" id="paymentDetail" style="margin-top:10px;">Checking Stripe payment information...</p>
+    </article>
 
   <article class="panel span-6">
     <h2>Your information</h2>
@@ -81,6 +85,69 @@
           <div class="empty">Loading available times...</div>
         </div>
       </section>
+    </div>
+  </article>
+
+
+  <article class="panel span-12" id="payments">
+    <div class="panel-heading">
+      <div>
+        <p class="kicker">Step 6</p>
+        <h2>Payments</h2>
+        <p class="muted">Secure checkout is hosted by Stripe. Your card details are never stored on this website.</p>
+      </div>
+      <button class="btn btn-ghost btn-small hidden" id="manageBillingBtn" type="button">Manage billing</button>
+    </div>
+
+    <div class="msg" id="paymentMsg" role="status" aria-live="polite"></div>
+
+    <div class="purchase-grid">
+      <article class="purchase-card featured-purchase">
+        <span class="status status-confirmed">Monthly</span>
+        <h3>Online Coaching</h3>
+        <p class="purchase-price">$149<span>/month</span></p>
+        <p class="muted">Custom programming, weekly check-ins, form feedback, general nutrition guidance, and client support.</p>
+        <button class="btn btn-primary checkout-btn" data-product-key="online_monthly" type="button">Subscribe</button>
+      </article>
+
+      <article class="purchase-card">
+        <span class="status">One time</span>
+        <h3>Single Session</h3>
+        <p class="purchase-price">$75</p>
+        <p class="muted">One 60-minute, one-on-one in-person training session.</p>
+        <button class="btn btn-ghost checkout-btn" data-product-key="single_session" type="button">Purchase</button>
+      </article>
+
+      <article class="purchase-card">
+        <span class="status">Save $20</span>
+        <h3>4 Sessions</h3>
+        <p class="purchase-price">$280</p>
+        <p class="muted">$70 per session. A practical starter package for consistent coaching.</p>
+        <button class="btn btn-ghost checkout-btn" data-product-key="four_sessions" type="button">Purchase package</button>
+      </article>
+
+      <article class="purchase-card featured-purchase">
+        <span class="status status-confirmed">Popular</span>
+        <h3>8 Sessions</h3>
+        <p class="purchase-price">$520</p>
+        <p class="muted">$65 per session. A strong option for building momentum and consistency.</p>
+        <button class="btn btn-primary checkout-btn" data-product-key="eight_sessions" type="button">Purchase package</button>
+      </article>
+
+      <article class="purchase-card">
+        <span class="status">Best value</span>
+        <h3>12 Sessions</h3>
+        <p class="purchase-price">$720</p>
+        <p class="muted">$60 per session. Best for clients ready for longer-term training.</p>
+        <button class="btn btn-ghost checkout-btn" data-product-key="twelve_sessions" type="button">Purchase package</button>
+      </article>
+    </div>
+
+    <div class="purchase-summary">
+      <h3>Your purchases</h3>
+      <div id="purchaseHistory" class="stack-list">
+        <div class="empty">Loading payment history...</div>
+      </div>
     </div>
   </article>
 
@@ -261,8 +328,159 @@ async function load(){
     console.error(error);
     showPageMessage('Your account is active, but the client portal database setup is not complete yet. Run setup_client_portal.sql in Supabase, then refresh.');
   }
-  await loadSchedule();
+  await Promise.all([loadSchedule(),loadPayments()]);
 }
+
+
+const PAYMENT_FUNCTION_URL=`${SUPABASE_URL}/functions/v1`;
+
+function showPaymentMessage(value,type='error'){
+  const el=document.getElementById('paymentMsg');
+  el.textContent=value;
+  el.className='msg show '+type;
+}
+function clearPaymentMessage(){document.getElementById('paymentMsg').className='msg'}
+
+function formatMoney(cents,currency='usd'){
+  return new Intl.NumberFormat('en-US',{style:'currency',currency:String(currency).toUpperCase()}).format((cents||0)/100);
+}
+
+async function invokePaymentFunction(functionName,body={}){
+  const {data:{session}}=await db.auth.getSession();
+  if(!session)throw new Error('Your session expired. Please log in again.');
+
+  const response=await fetch(`${PAYMENT_FUNCTION_URL}/${functionName}`,{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'Authorization':`Bearer ${session.access_token}`,
+      'apikey':SUPABASE_ANON_KEY
+    },
+    body:JSON.stringify(body)
+  });
+
+  const payload=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(payload.error||payload.message||'Payment request failed.');
+  return payload;
+}
+
+async function startCheckout(button){
+  clearPaymentMessage();
+  const original=button.textContent;
+  button.disabled=true;
+  button.textContent='Opening checkout...';
+  try{
+    const result=await invokePaymentFunction('create-checkout-session',{
+      productKey:button.dataset.productKey,
+      successUrl:`${location.origin}${location.pathname}?payment=success`,
+      cancelUrl:`${location.origin}${location.pathname}?payment=cancelled`
+    });
+    if(!result.url)throw new Error('Stripe did not return a checkout URL.');
+    location.href=result.url;
+  }catch(error){
+    console.error(error);
+    showPaymentMessage(error.message||'Checkout could not be opened.');
+    button.disabled=false;
+    button.textContent=original;
+  }
+}
+
+async function openBillingPortal(){
+  const button=document.getElementById('manageBillingBtn');
+  button.disabled=true;
+  const original=button.textContent;
+  button.textContent='Opening...';
+  try{
+    const result=await invokePaymentFunction('create-portal-session',{
+      returnUrl:`${location.origin}${location.pathname}`
+    });
+    location.href=result.url;
+  }catch(error){
+    console.error(error);
+    showPaymentMessage(error.message||'Billing management could not be opened.');
+    button.disabled=false;
+    button.textContent=original;
+  }
+}
+
+function renderPurchases(rows){
+  const container=document.getElementById('purchaseHistory');
+  if(!rows.length){
+    container.innerHTML='<div class="empty">No completed purchases yet.</div>';
+    return;
+  }
+
+  container.innerHTML=rows.map(row=>{
+    const purchased=new Date(row.created_at).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+    const remaining=row.sessions_total
+      ? `<span>${row.sessions_remaining} of ${row.sessions_total} sessions remaining</span>`
+      : `<span>${escapeHtml(row.status)}</span>`;
+
+    return `<div class="purchase-history-row">
+      <div>
+        <strong>${escapeHtml(row.product_name)}</strong>
+        <p class="muted">${purchased} · ${formatMoney(row.amount_total,row.currency)}</p>
+      </div>
+      ${remaining}
+    </div>`;
+  }).join('');
+}
+
+async function loadPayments(){
+  try{
+    const [profileResult,purchasesResult]=await Promise.all([
+      db.from('payment_profiles')
+        .select('subscription_status,current_plan,current_period_end,stripe_customer_id')
+        .maybeSingle(),
+      db.from('purchases')
+        .select('product_name,product_key,payment_type,status,amount_total,currency,sessions_total,sessions_remaining,created_at')
+        .order('created_at',{ascending:false})
+    ]);
+
+    if(profileResult.error)throw profileResult.error;
+    if(purchasesResult.error)throw purchasesResult.error;
+
+    const profile=profileResult.data;
+    const purchases=purchasesResult.data||[];
+    renderPurchases(purchases);
+
+    const activeSubscription=profile && ['active','trialing'].includes(profile.subscription_status);
+    if(activeSubscription){
+      text('paymentValue','Active');
+      const renewal=profile.current_period_end
+        ? new Date(profile.current_period_end).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})
+        : null;
+      text('paymentDetail',renewal?`${profile.current_plan||'Online Coaching'} · Renews ${renewal}`:(profile.current_plan||'Online Coaching'));
+    }else if(purchases.some(p=>p.status==='paid'||p.status==='complete')){
+      text('paymentValue','Paid');
+      const usable=purchases.find(p=>p.sessions_remaining>0);
+      text('paymentDetail',usable?`${usable.sessions_remaining} session${usable.sessions_remaining===1?'':'s'} remaining`:'Purchase completed');
+    }else{
+      text('paymentValue','Not started');
+      text('paymentDetail','Choose a coaching plan or session package below.');
+    }
+
+    document.getElementById('manageBillingBtn').classList.toggle('hidden',!profile?.stripe_customer_id);
+  }catch(error){
+    console.error(error);
+    text('paymentValue','Setup needed');
+    text('paymentDetail','Run setup_payments.sql and deploy the Stripe functions.');
+    document.getElementById('purchaseHistory').innerHTML='<div class="empty">Payment setup is not complete yet.</div>';
+  }
+}
+
+document.querySelectorAll('.checkout-btn').forEach(button=>button.addEventListener('click',()=>startCheckout(button)));
+document.getElementById('manageBillingBtn').addEventListener('click',openBillingPortal);
+
+const paymentState=new URLSearchParams(location.search).get('payment');
+if(paymentState==='success'){
+  showPaymentMessage('Payment received. Stripe may take a few seconds to update your dashboard.','success');
+  history.replaceState({},'',location.pathname);
+}else if(paymentState==='cancelled'){
+  showPaymentMessage('Checkout was cancelled. No payment was made.');
+  history.replaceState({},'',location.pathname);
+}
+
 
 document.getElementById('refreshScheduleBtn').addEventListener('click',loadSchedule);
 document.getElementById('signOutBtn').addEventListener('click',async()=>{await db.auth.signOut();location.replace('login.html')});
