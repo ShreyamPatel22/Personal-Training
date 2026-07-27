@@ -49,3 +49,22 @@ footer{border-top:1px solid var(--line);padding:36px 0;background:var(--paper-al
   .session-card,.slot-card{align-items:flex-start;flex-direction:column}
   .session-card .btn,.slot-card .btn{width:100%;text-align:center}
 }
+
+
+/* ---------- STEP 6: PAYMENTS ---------- */
+.purchase-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.purchase-card{border:1px solid var(--line);background:var(--paper);padding:22px;display:flex;flex-direction:column;gap:14px}
+.purchase-card h3{font-size:23px;margin-top:3px}
+.purchase-card .btn{margin-top:auto;text-align:center}
+.featured-purchase{border-color:var(--navy);box-shadow:0 0 0 1px var(--navy)}
+.purchase-price{font:600 31px var(--font-mono);line-height:1;color:var(--ink)}
+.purchase-price span{font-size:13px;color:var(--ink-soft);font-weight:500}
+.purchase-summary{margin-top:30px}
+.purchase-summary h3{font-size:21px;margin-bottom:14px}
+.purchase-history-row{border:1px solid var(--line);background:var(--paper);padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:20px;font-size:14px}
+.purchase-history-row>span{font-family:var(--font-mono);font-size:12px;text-align:right;color:var(--teal);font-weight:600}
+@media(max-width:860px){
+  .purchase-grid{grid-template-columns:1fr}
+  .purchase-history-row{align-items:flex-start;flex-direction:column}
+  .purchase-history-row>span{text-align:left}
+}
