@@ -102,44 +102,44 @@
     <div class="msg" id="paymentMsg" role="status" aria-live="polite"></div>
 
     <div class="purchase-grid">
+      <article class="purchase-card">
+        <span class="status">One time</span>
+        <h3>Initial Fitness Consultation</h3>
+        <p class="purchase-price">$50</p>
+        <p class="muted">A 60-minute consultation to discuss goals, training history, and the best coaching approach. The full $50 can be credited toward a coaching package selected within 7 days.</p>
+        <button class="btn btn-ghost checkout-btn" data-product-key="initial_consultation" type="button">Book consultation</button>
+      </article>
+
       <article class="purchase-card featured-purchase">
         <span class="status status-confirmed">Monthly</span>
-        <h3>Online Coaching</h3>
+        <h3>Basic Coaching</h3>
         <p class="purchase-price">$149<span>/month</span></p>
-        <p class="muted">Custom programming, weekly check-ins, form feedback, general nutrition guidance, and client support.</p>
-        <button class="btn btn-primary checkout-btn" data-product-key="online_monthly" type="button">Subscribe</button>
+        <p class="muted">Customized workout programming, progress tracking, and weekly check-ins.</p>
+        <button class="btn btn-primary checkout-btn" data-product-key="basic_coaching" type="button">Subscribe</button>
+      </article>
+
+      <article class="purchase-card">
+        <span class="status">Monthly</span>
+        <h3>Premium Coaching</h3>
+        <p class="purchase-price">$249<span>/month</span></p>
+        <p class="muted">Custom workouts, nutrition guidance, unlimited messaging, and weekly progress reviews.</p>
+        <button class="btn btn-ghost checkout-btn" data-product-key="premium_coaching" type="button">Subscribe</button>
+      </article>
+
+      <article class="purchase-card featured-purchase">
+        <span class="status status-confirmed">Highest support</span>
+        <h3>Elite Coaching</h3>
+        <p class="purchase-price">$399<span>/month</span></p>
+        <p class="muted">Complete coaching with customized training, nutrition coaching, priority support, video form reviews, and unlimited communication.</p>
+        <button class="btn btn-primary checkout-btn" data-product-key="elite_coaching" type="button">Subscribe</button>
       </article>
 
       <article class="purchase-card">
         <span class="status">One time</span>
-        <h3>Single Session</h3>
-        <p class="purchase-price">$75</p>
-        <p class="muted">One 60-minute, one-on-one in-person training session.</p>
-        <button class="btn btn-ghost checkout-btn" data-product-key="single_session" type="button">Purchase</button>
-      </article>
-
-      <article class="purchase-card">
-        <span class="status">Save $20</span>
-        <h3>4 Sessions</h3>
-        <p class="purchase-price">$280</p>
-        <p class="muted">$70 per session. A practical starter package for consistent coaching.</p>
-        <button class="btn btn-ghost checkout-btn" data-product-key="four_sessions" type="button">Purchase package</button>
-      </article>
-
-      <article class="purchase-card featured-purchase">
-        <span class="status status-confirmed">Popular</span>
-        <h3>8 Sessions</h3>
-        <p class="purchase-price">$520</p>
-        <p class="muted">$65 per session. A strong option for building momentum and consistency.</p>
-        <button class="btn btn-primary checkout-btn" data-product-key="eight_sessions" type="button">Purchase package</button>
-      </article>
-
-      <article class="purchase-card">
-        <span class="status">Best value</span>
-        <h3>12 Sessions</h3>
-        <p class="purchase-price">$720</p>
-        <p class="muted">$60 per session. Best for clients ready for longer-term training.</p>
-        <button class="btn btn-ghost checkout-btn" data-product-key="twelve_sessions" type="button">Purchase package</button>
+        <h3>Custom Workout Plan</h3>
+        <p class="purchase-price">$99</p>
+        <p class="muted">A personalized workout program designed around your goals, available equipment, schedule, and experience.</p>
+        <button class="btn btn-ghost checkout-btn" data-product-key="custom_workout_plan" type="button">Purchase plan</button>
       </article>
     </div>
 
@@ -450,7 +450,7 @@ async function loadPayments(){
       const renewal=profile.current_period_end
         ? new Date(profile.current_period_end).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})
         : null;
-      text('paymentDetail',renewal?`${profile.current_plan||'Online Coaching'} · Renews ${renewal}`:(profile.current_plan||'Online Coaching'));
+      text('paymentDetail',renewal?`${profile.current_plan||'Coaching Subscription'} · Renews ${renewal}`:(profile.current_plan||'Coaching Subscription'));
     }else if(purchases.some(p=>p.status==='paid'||p.status==='complete')){
       text('paymentValue','Paid');
       const usable=purchases.find(p=>p.sessions_remaining>0);
